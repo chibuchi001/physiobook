@@ -1,0 +1,544 @@
+// PhysioBook - AI-Powered Physiotherapy Platform
+// Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  clerkId       String    @unique
+  email         String    @unique
+  firstName     String?
+  lastName      String?
+  imageUrl      String?
+  role          UserRole  @default(PATIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  patient       Patient?
+  therapist     Therapist?
+  subscription  Subscription?
+}
+
+enum UserRole {
+  PATIENT
+  THERAPIST
+  ADMIN
+}
+
+// ============================================
+// PATIENT & TRIAGE
+// ============================================
+
+model Patient {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Info
+  dateOfBirth           DateTime?
+  phone                 String?
+  emergencyContact      String?
+  emergencyPhone        String?
+  
+  // Medical Info
+  medicalHistory        String?  @db.Text
+  allergies             String?
+  currentMedications    String?  @db.Text
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  triageAssessments     TriageAssessment[]
+  appointments          Appointment[]
+  progressRecords       ProgressRecord[]
+  exerciseSessions      ExerciseSession[]
+  noShowPredictions     NoShowPrediction[]
+}
+
+model TriageAssessment {
+  id                    String   @id @default(cuid())
+  patientId             String
+  patient               Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  // Patient Input
+  symptoms              String   @db.Text
+  affectedBodyRegion    BodyRegion
+  painLevel             Int      // 1-10
+  injuryDuration        InjuryDuration
+  painType              String?  // sharp, dull, aching, burning, etc.
+  worseningFactors      String?  @db.Text
+  improvingFactors      String?  @db.Text
+  previousTreatment     String?  @db.Text
+  
+  // AI-Generated Classification
+  triageCategory        TriageCategory
+  urgencyLevel          UrgencyLevel
+  recommendedSpecialty  TherapistSpecialty
+  aiConfidenceScore     Float    // 0-1
+  aiReasoning           String?  @db.Text
+  
+  // Flags
+  redFlags              String[] // Array of concerning symptoms
+  requiresImmediate     Boolean  @default(false)
+  
+  createdAt             DateTime @default(now())
+  
+  // Relations
+  appointment           Appointment?
+}
+
+enum BodyRegion {
+  HEAD_NECK
+  SHOULDER
+  UPPER_BACK
+  LOWER_BACK
+  ARM_ELBOW
+  WRIST_HAND
+  HIP
+  KNEE
+  ANKLE_FOOT
+  CHEST
+  ABDOMEN
+  FULL_BODY
+  OTHER
+}
+
+enum InjuryDuration {
+  LESS_THAN_WEEK
+  ONE_TO_FOUR_WEEKS
+  ONE_TO_THREE_MONTHS
+  THREE_TO_SIX_MONTHS
+  SIX_MONTHS_TO_YEAR
+  MORE_THAN_YEAR
+}
+
+enum TriageCategory {
+  ACUTE_INJURY
+  CHRONIC_CONDITION
+  POST_OPERATIVE
+  SPORTS_INJURY
+  NEUROLOGICAL
+  PEDIATRIC
+  GERIATRIC
+  PREVENTIVE
+}
+
+enum UrgencyLevel {
+  EMERGENCY       // Needs immediate attention
+  URGENT          // Within 24-48 hours
+  SEMI_URGENT     // Within a week
+  ROUTINE         // Can wait 1-2 weeks
+  PREVENTIVE      // Wellness/maintenance
+}
+
+// ============================================
+// THERAPIST
+// ============================================
+
+model Therapist {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Professional Info
+  licenseNumber         String   @unique
+  specialties           TherapistSpecialty[]
+  yearsOfExperience     Int
+  bio                   String?  @db.Text
+  education             String?
+  certifications        String[] 
+  
+  // Availability
+  workingDays           Int[]    // 0=Sunday, 1=Monday, etc.
+  startTime             String   // "09:00"
+  endTime               String   // "17:00"
+  slotDuration          Int      @default(30) // minutes
+  
+  // Performance Metrics (for AI matching)
+  averageRating         Float    @default(0)
+  totalReviews          Int      @default(0)
+  successRate           Float    @default(0) // Patient outcome success rate
+  noShowRate            Float    @default(0)
+  
+  // Status
+  isActive              Boolean  @default(true)
+  isAcceptingPatients   Boolean  @default(true)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  appointments          Appointment[]
+  reviews               Review[]
+  availabilitySlots     AvailabilitySlot[]
+}
+
+enum TherapistSpecialty {
+  SPORTS_REHABILITATION
+  ORTHOPEDIC
+  NEUROLOGICAL
+  PEDIATRIC
+  GERIATRIC
+  POST_OPERATIVE
+  CHRONIC_PAIN
+  MANUAL_THERAPY
+  AQUATIC_THERAPY
+  VESTIBULAR
+  WOMENS_HEALTH
+  CARDIOPULMONARY
+}
+
+model AvailabilitySlot {
+  id            String    @id @default(cuid())
+  therapistId   String
+  therapist     Therapist @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+  
+  date          DateTime  @db.Date
+  startTime     String    // "09:00"
+  endTime       String    // "09:30"
+  isBooked      Boolean   @default(false)
+  isBlocked     Boolean   @default(false)
+  
+  @@unique([therapistId, date, startTime])
+}
+
+// ============================================
+// APPOINTMENTS
+// ============================================
+
+model Appointment {
+  id                    String   @id @default(cuid())
+  patientId             String
+  patient               Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  therapistId           String
+  therapist             Therapist @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+  triageAssessmentId    String?  @unique
+  triageAssessment      TriageAssessment? @relation(fields: [triageAssessmentId], references: [id])
+  
+  // Scheduling
+  scheduledDate         DateTime @db.Date
+  scheduledTime         String   // "09:00"
+  duration              Int      @default(30) // minutes
+  
+  // Status
+  status                AppointmentStatus @default(PENDING)
+  type                  AppointmentType   @default(IN_PERSON)
+  
+  // Session Details
+  chiefComplaint        String?  @db.Text
+  sessionNotes          String?  @db.Text
+  treatmentPlan         String?  @db.Text
+  homeExercises         String?  @db.Text
+  
+  // No-Show Prediction
+  noShowProbability     Float?
+  remindersSent         Int      @default(0)
+  confirmedByPatient    Boolean  @default(false)
+  
+  // Video Session (for Tele-Physio)
+  videoSessionUrl       String?
+  videoSessionId        String?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  review                Review?
+  progressRecord        ProgressRecord?
+  noShowPrediction      NoShowPrediction?
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
+enum AppointmentType {
+  IN_PERSON
+  TELE_PHYSIO
+  HOME_VISIT
+}
+
+// ============================================
+// PROGRESS & OUTCOME TRACKING
+// ============================================
+
+model ProgressRecord {
+  id                    String   @id @default(cuid())
+  patientId             String
+  patient               Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointmentId         String?  @unique
+  appointment           Appointment? @relation(fields: [appointmentId], references: [id])
+  
+  // Pain & Mobility Metrics
+  painLevel             Int      // 1-10
+  mobilityScore         Int      // 1-10
+  functionalScore       Int      // 1-10
+  
+  // Specific Measurements
+  rangeOfMotion         Json?    // { "shoulder_flexion": 150, "shoulder_extension": 45 }
+  strengthAssessment    Json?    // { "grip_strength": 25, "leg_press": 100 }
+  balanceScore          Float?
+  
+  // Patient Self-Report
+  dailyActivityLevel    Int?     // 1-10
+  sleepQuality          Int?     // 1-10
+  overallWellbeing      Int?     // 1-10
+  notes                 String?  @db.Text
+  
+  // AI Analysis
+  aiProgressAnalysis    String?  @db.Text
+  predictedRecoveryDate DateTime?
+  complianceScore       Float?   // 0-100
+  
+  recordedAt            DateTime @default(now())
+}
+
+// ============================================
+// EXERCISE GUIDANCE & POSE DETECTION
+// ============================================
+
+model Exercise {
+  id                    String   @id @default(cuid())
+  name                  String
+  description           String   @db.Text
+  instructions          String   @db.Text
+  targetBodyRegion      BodyRegion
+  difficulty            ExerciseDifficulty
+  
+  // Pose Detection Config
+  keyPosePoints         Json?    // Target angles/positions for pose detection
+  toleranceThreshold    Float    @default(15) // degrees
+  repCount              Int      @default(10)
+  holdDuration          Int?     // seconds for static exercises
+  
+  // Media
+  videoUrl              String?
+  thumbnailUrl          String?
+  animationData         Json?    // For animated guides
+  
+  // Categorization
+  category              ExerciseCategory
+  equipment             String[] // ["resistance band", "dumbbell", etc.]
+  contraindications     String[] // Conditions where this exercise shouldn't be done
+  
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  
+  // Relations
+  exerciseSessions      ExerciseSession[]
+  exercisePlanItems     ExercisePlanItem[]
+}
+
+enum ExerciseDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ExerciseCategory {
+  STRETCHING
+  STRENGTHENING
+  BALANCE
+  CARDIO
+  MOBILITY
+  POSTURE
+  BREATHING
+}
+
+model ExercisePlan {
+  id                    String   @id @default(cuid())
+  name                  String
+  description           String?  @db.Text
+  targetCondition       String?
+  durationWeeks         Int      @default(4)
+  
+  createdAt             DateTime @default(now())
+  
+  // Relations
+  items                 ExercisePlanItem[]
+}
+
+model ExercisePlanItem {
+  id                    String   @id @default(cuid())
+  planId                String
+  plan                  ExercisePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exerciseId            String
+  exercise              Exercise @relation(fields: [exerciseId], references: [id])
+  
+  dayOfWeek             Int[]    // Which days to perform
+  sets                  Int      @default(3)
+  reps                  Int      @default(10)
+  holdSeconds           Int?
+  restSeconds           Int      @default(30)
+  order                 Int
+}
+
+model ExerciseSession {
+  id                    String   @id @default(cuid())
+  patientId             String
+  patient               Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  exerciseId            String
+  exercise              Exercise @relation(fields: [exerciseId], references: [id])
+  
+  // Performance Data
+  completedReps         Int
+  targetReps            Int
+  formScore             Float    // 0-100 from pose detection
+  averageAccuracy       Float    // 0-100
+  duration              Int      // seconds
+  
+  // Pose Detection Results
+  poseAnalysis          Json?    // Detailed pose data
+  corrections           String[] // AI-generated form corrections
+  
+  completedAt           DateTime @default(now())
+}
+
+// ============================================
+// REVIEWS & FEEDBACK
+// ============================================
+
+model Review {
+  id                    String   @id @default(cuid())
+  appointmentId         String   @unique
+  appointment           Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  therapistId           String
+  therapist             Therapist @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+  
+  rating                Int      // 1-5
+  comment               String?  @db.Text
+  
+  // Specific Ratings
+  communicationRating   Int?     // 1-5
+  effectivenessRating   Int?     // 1-5
+  punctualityRating     Int?     // 1-5
+  
+  wouldRecommend        Boolean  @default(true)
+  
+  createdAt             DateTime @default(now())
+}
+
+// ============================================
+// NO-SHOW PREDICTION
+// ============================================
+
+model NoShowPrediction {
+  id                    String   @id @default(cuid())
+  patientId             String
+  patient               Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointmentId         String   @unique
+  appointment           Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  
+  // Prediction
+  probability           Float    // 0-1
+  riskLevel             RiskLevel
+  
+  // Features used for prediction
+  featureVector         Json?
+  
+  // Actions Taken
+  reminderSent24h       Boolean  @default(false)
+  reminderSent1h        Boolean  @default(false)
+  manualConfirmation    Boolean  @default(false)
+  overbookingApplied    Boolean  @default(false)
+  
+  // Outcome
+  actualOutcome         NoShowOutcome?
+  
+  predictedAt           DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum NoShowOutcome {
+  ATTENDED
+  NO_SHOW
+  CANCELLED
+  RESCHEDULED
+}
+
+// ============================================
+// SUBSCRIPTION & BILLING
+// ============================================
+
+model Subscription {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  plan                  SubscriptionPlan @default(FREE)
+  status                SubscriptionStatus @default(ACTIVE)
+  
+  // Clerk Billing
+  clerkSubscriptionId   String?  @unique
+  
+  // Limits
+  appointmentsPerMonth  Int      @default(2)
+  telePhysioEnabled     Boolean  @default(false)
+  aiExerciseEnabled     Boolean  @default(false)
+  voiceAgentEnabled     Boolean  @default(false)
+  
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+}
+
+// ============================================
+// AUDIT LOG (for compliance)
+// ============================================
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  action        String
+  entityType    String
+  entityId      String?
+  details       Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+  
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

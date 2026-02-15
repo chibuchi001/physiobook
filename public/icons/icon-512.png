@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="iconGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="100" fill="url(#iconGrad512)"/>
+  <g fill="white">
+    <!-- Stylized person in motion -->
+    <circle cx="256" cy="144" r="52"/>
+    <path d="M176 230 Q256 280 336 230 L310 390 L284 390 L268 284 L244 284 L228 390 L202 390 Z" />
+    <path d="M146 256 L226 214 M286 214 L366 256" stroke="white" stroke-width="20" stroke-linecap="round" fill="none"/>
+    <!-- Activity pulse line -->
+    <path d="M96 416 L176 416 L202 364 L230 442 L256 338 L282 416 L416 416" stroke="white" stroke-width="16" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>
