@@ -191,14 +191,6 @@ ADMIN_EMAIL=
 NEXT_PUBLIC_APP_URL=
 ```
 
-## 🎯 Demo Flow for Judges
-
-1. **Intake & Triage**: User enters symptoms → AI classifies condition
-2. **Match**: Recommended therapist + available schedule
-3. **Calendar**: Book appointment + automated reminders
-4. **Post-Session**: Patient logs pain → dashboard updates
-5. **Exercise Feedback**: Camera UI with real-time form detection
-6. **Admin View**: Clinic KPI dashboard (no-shows, slots, patient outcomes)
 
 ## 📊 API Endpoints
 
