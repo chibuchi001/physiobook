@@ -366,7 +366,7 @@ enum ExerciseCategory {
 
 model ExercisePlan {
   id                    String   @id @default(cuid())
-  name                  String
+  name                  String   @unique
   description           String?  @db.Text
   targetCondition       String?
   durationWeeks         Int      @default(4)
@@ -390,6 +390,9 @@ model ExercisePlanItem {
   holdSeconds           Int?
   restSeconds           Int      @default(30)
   order                 Int
+
+  // Relations
+  sessions              ExerciseSession[]
 }
 
 model ExerciseSession {
@@ -398,6 +401,8 @@ model ExerciseSession {
   patient               Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   exerciseId            String
   exercise              Exercise @relation(fields: [exerciseId], references: [id])
+  exercisePlanItemId    String?
+  exercisePlanItem      ExercisePlanItem? @relation(fields: [exercisePlanItemId], references: [id])
   
   // Performance Data
   completedReps         Int
