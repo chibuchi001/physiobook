@@ -5,7 +5,6 @@ import prisma from "@/lib/prisma";
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
-
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -45,8 +44,8 @@ export async function POST(request: NextRequest) {
         targetReps,
         formScore,
         duration,
-        poseAnalysisData: poseAnalysisData || null,
-        formCorrections: formCorrections || [],
+        poseAnalysis: poseAnalysisData || null,
+        corrections: formCorrections || [],
         completedAt: new Date(),
       },
       include: {
@@ -85,7 +84,6 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
-
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
