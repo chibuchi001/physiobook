@@ -103,7 +103,7 @@ async function main() {
   for (const exercise of exercises) {
     await prisma.exercise.upsert({
       where: { name: exercise.name },
-      update: exercise,
+      update: exercise as any,
       create: exercise as any,
     });
   }
