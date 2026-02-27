@@ -25,8 +25,8 @@ import { PricingCard } from "@/components/landing/pricing-card";
 import { Footer } from "@/components/landing/footer";
 
 
-export default async function HomePage() {
-  const { userId } = await auth();
+export default function HomePage() {
+  const { userId } =  auth();
 
   if (userId) {
     redirect("/dashboard");
