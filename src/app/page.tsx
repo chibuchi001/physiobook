@@ -35,13 +35,11 @@ export default async function HomePage() {
     <div className="min-h-screen">
       <Navbar />
 
-      {/* ── Hero Section ── */}
+      {/* Hero Section */}
       <section className="relative hero-gradient pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
 
         <div className="container mx-auto px-4 relative z-10">
-
-          {/* Headline / CTA */}
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-physio-100 text-physio-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
@@ -88,13 +86,11 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Dashboard Preview — plain div, no motion dependency */}
+          {/* Dashboard Preview */}
           <div className="mt-16 relative">
             <div className="relative mx-auto max-w-5xl">
               <div className="absolute -inset-4 bg-gradient-to-r from-physio-500/20 to-health-500/20 rounded-3xl blur-2xl" />
               <div className="relative bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
-
-                {/* Browser chrome bar */}
                 <div className="bg-muted/50 dark:bg-muted/30 px-4 py-3 border-b border-border flex items-center gap-3">
                   <div className="flex gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500" />
@@ -107,15 +103,13 @@ export default async function HomePage() {
                     </div>
                   </div>
                 </div>
-
-                {/* Dashboard content */}
                 <div className="p-6 bg-background/50 dark:bg-background">
                   <div className="grid grid-cols-4 gap-4 mb-6">
                     {[
-                      { label: "Appointments", value: "3",    color: "bg-blue-500/10   text-blue-500"   },
-                      { label: "Exercises",    value: "12",   color: "bg-green-500/10  text-green-500"  },
-                      { label: "Pain Score",   value: "2/10", color: "bg-red-500/10    text-red-500"    },
-                      { label: "Progress",     value: "78%",  color: "bg-purple-500/10 text-purple-500" },
+                      { label: "Appointments", value: "3" },
+                      { label: "Exercises", value: "12" },
+                      { label: "Pain Score", value: "2/10" },
+                      { label: "Progress", value: "78%" },
                     ].map((stat) => (
                       <div
                         key={stat.label}
@@ -132,26 +126,21 @@ export default async function HomePage() {
                     </span>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
-          {/* end Dashboard Preview */}
-
         </div>
-        {/* end container */}
       </section>
-      {/* ── end Hero Section ── */}
 
-      {/* ── Stats Section ── */}
+      {/* Stats Section */}
       <section className="py-16 bg-white border-y border-gray-100">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { value: "50K+",  label: "Patients Helped"   },
-              { value: "500+",  label: "Expert Therapists" },
-              { value: "95%",   label: "Recovery Success"  },
-              { value: "4.9/5", label: "Patient Rating"    },
+              { value: "50K+", label: "Patients Helped" },
+              { value: "500+", label: "Expert Therapists" },
+              { value: "95%", label: "Recovery Success" },
+              { value: "4.9/5", label: "Patient Rating" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-4xl font-bold gradient-text mb-2">
@@ -164,7 +153,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Features Section ── */}
+      {/* Features Section */}
       <section id="features" className="py-24 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -176,7 +165,6 @@ export default async function HomePage() {
               Our AI-powered platform transforms every step of your physiotherapy journey.
             </p>
           </div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard
               icon={Brain}
@@ -218,7 +206,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── How It Works Section ── */}
+      {/* How It Works Section */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -227,7 +215,6 @@ export default async function HomePage() {
               <span className="gradient-text">4 Simple Steps</span>
             </h2>
           </div>
-
           <div className="max-w-5xl mx-auto">
             <div className="grid md:grid-cols-4 gap-8">
               {[
@@ -279,7 +266,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Testimonials Section ── */}
+      {/* Testimonials Section */}
       <section className="py-24 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -290,7 +277,6 @@ export default async function HomePage() {
               See what our patients say about their recovery journey.
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <TestimonialCard
               name="Sarah Mitchell"
@@ -317,7 +303,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Pricing Section ── */}
+      {/* Pricing Section */}
       <section id="pricing" className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -329,7 +315,6 @@ export default async function HomePage() {
               Choose the plan that fits your recovery needs.
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <PricingCard
               name="Free"
@@ -380,7 +365,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── CTA Section ── */}
+      {/* CTA Section */}
       <section className="py-24 bg-gradient-to-br from-physio-600 to-health-600">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
@@ -399,7 +384,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Trust Section ── */}
+      {/* Trust Section */}
       <section className="py-16 bg-white border-t border-gray-100">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center justify-center gap-12">
